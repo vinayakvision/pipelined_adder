@@ -1,0 +1,48 @@
+// Designed by Deep Logic Labs
+module Pipelined_Adder #(parameter WIDTH = 8, STAGES = 4)(
+    input clk,
+    input reset,
+    input [WIDTH-1:0] a,
+    input [WIDTH-1:0] b,
+    output [WIDTH-1:0] sum
+);
+
+    reg [WIDTH-1:0] pipeline_a [0:STAGES];
+    reg [WIDTH-1:0] pipeline_b [0:STAGES];
+    reg [WIDTH-1:0] pipeline_sum [0:STAGES];
+
+    integer j;
+
+    // Stage 0 computation
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            pipeline_a[0] <= 0;
+            pipeline_b[0] <= 0;
+            pipeline_sum[0] <= 0;
+        end else begin
+            pipeline_a[0] <= a;
+            pipeline_b[0] <= b;
+            pipeline_sum[0] <= a + b;
+        end
+    end
+
+    // Generate other pipeline stages
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            for (j = 1; j <= STAGES; j = j + 1) begin
+                pipeline_a[j] <= 0;
+                pipeline_b[j] <= 0;
+                pipeline_sum[j] <= 0;
+            end
+        end else begin
+            for (j = 1; j <= STAGES; j = j + 1) begin
+                pipeline_a[j] <= pipeline_a[j-1];
+                pipeline_b[j] <= pipeline_b[j-1];
+                pipeline_sum[j] <= pipeline_sum[j-1];
+            end
+        end
+    end
+
+    assign sum = pipeline_sum[STAGES];
+
+endmodule

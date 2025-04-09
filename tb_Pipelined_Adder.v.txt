@@ -1,0 +1,60 @@
+// Designed By Deep Logic Labs
+module tb_Pipelined_Adder;
+
+    parameter WIDTH = 8;
+    parameter STAGES = 4;
+
+    reg clk;
+    reg reset;
+    reg [WIDTH-1:0] a, b;
+    wire [WIDTH-1:0] sum;
+
+    // Instantiate the DUT
+    Pipelined_Adder #(WIDTH, STAGES) uut (
+        .clk(clk),
+        .reset(reset),
+        .a(a),
+        .b(b),
+        .sum(sum)
+    );
+
+    // Clock generation
+    initial clk = 0;
+    always #5 clk = ~clk;
+
+    // Test sequence
+    initial begin
+        $display("Pipelined Adder Test Start");
+        $dumpfile("pipelined_adder.vcd");
+        $dumpvars(0, tb_Pipelined_Adder);
+
+        reset = 1;
+        a = 0;
+        b = 0;
+
+        #10;
+        reset = 0;
+
+        // Test case 1
+        a = 8'h0A; // 10
+        b = 8'h05; // 5
+        #((STAGES+1)*10); // Wait for pipeline to flush
+        $display("Sum = %d (Expected: 15)", sum);
+
+        // Test case 2
+        a = 8'h0F; // 15
+        b = 8'h01; // 1
+        #((STAGES+1)*10);
+        $display("Sum = %d (Expected: 16)", sum);
+
+        // Test case 3
+        a = 8'h07; // 7
+        b = 8'h09; // 9
+        #((STAGES+1)*10);
+        $display("Sum = %d (Expected: 16)", sum);
+
+        $display("Pipelined Adder Test End");
+        $finish;
+    end
+
+endmodule
